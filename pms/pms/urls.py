@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #('', include('taskmanager.urls')),
     path('projects/<int:project_id>/board/', include('board.urls')),
     path('projects/', include('projects.urls',namespace="projects")),
+    path('accounts/', include('django.contrib.auth.urls')),  # for login/logout
+    path('acc/', include('Accounts.urls')),
 ]

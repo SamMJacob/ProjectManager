@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Our Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f9ff;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #2a5d84;
+            margin-bottom: 30px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-signin {
+            background-color: #a8dadc; /* pastel blue */
+            color: #fff;
+        }
+
+        .btn-signup {
+            background-color: #f5a623; /* pastel red */
+            color: #fff;
+        }
+
+        .btn-signin:hover {
+            background-color: #88c8c2;
+        }
+
+        .btn-signup:hover {
+            background-color: #f07b29;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Our Website</h1>
+    <p>Join us today and manage your tasks efficiently!</p>
+
+    <div class="button-container">
+        <button class="btn btn-signin" onclick="window.location.href='/acc/login/'">Sign In</button>
+        <button class="btn btn-signup" onclick="window.location.href='/acc/register/'">Sign Up</button>
+    </div>
+</body>
+</html>

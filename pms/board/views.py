@@ -6,6 +6,7 @@ import json
 from django.shortcuts import render, get_object_or_404
 from projects.models import Project
 
+
 def board(request, project_id):
     projects = Project.objects.all()
     # Fetch tasks and filter by status

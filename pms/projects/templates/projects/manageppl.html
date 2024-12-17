@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% block content %}
+    <h2>Manage People - {{ project.name }}</h2>
+
+    <h3>Current Members</h3>
+    <ul>
+      {% for membership in members %}
+        <li>
+          {{ membership.user.username }} (Admin: {% if membership.is_admin %}Yes{% else %}No{% endif %})
+          {% if membership.is_admin %}
+            <!-- Admins can't remove themselves, so check if they're not trying to remove themselves -->
+            {% if membership.user != request.user %}
+              <form method="POST" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="username" value="{{ membership.user.username }}">
+                <button type="submit">Remove</button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  
+    <h3>Invite New Users</h3>
+    <form method="POST">
+      {% csrf_token %}
+      <label for="username">Username of the user to invite:</label>
+      <input type="text" name="username" id="username" required>
+      <button type="submit">Send Invite</button>
+    </form>
+  
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+  {% endblock %}
+</body>
+</html>
