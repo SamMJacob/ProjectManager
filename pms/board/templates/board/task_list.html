@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  {% csrf_token %}
+    <script>
+        const csrftoken = "{{ csrf_token }}";
+    </script>
+  <style>
+    /* General Styling */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Navbar and Buttons */
+    .navbar, .left-pane button, .dropdown-btn {
+        background-color: #a8dadc; /* Pastel blue */
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        color: #333;
+        font-size: 1rem;
+        text-align: left;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        width: 100%;
+    }
+    .navbar button:hover, .left-pane button:hover, .dropdown-btn:hover {
+        background-color: #e9ecef; /* Light pastel */
+    }
+
+    /* Navbar */
+    .navbar {
+        display: flex;
+        padding: 10px 20px;
+        justify-content: space-around;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dropdown Menu */
+    .navbutton {
+        position: relative;
+        display: inline-block;
+    }
+    .dropdown-content {
+        opacity: 0;
+        visibility: hidden; /* Prevent it from being clickable when hidden */
+        position: absolute;
+        background-color: #f1faee; /* Pastel green */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 5px;
+        margin-top: 10px;
+        min-width: 100px;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .dropdown-content a {
+        padding: 10px;
+        display: block;
+        text-decoration: none;
+        color: #333;
+        min-width:100px;
+        white-space: nowrap;
+    }
+    .dropdown-content button {
+        width: 100%;
+        text-align: left;
+    }
+    .dropdown-content button:hover {
+        background-color: #e9ecef; /* Light pastel */
+    }
+    .navbutton:hover .dropdown-content,
+    .navbutton .dropdown-content:hover {
+        opacity: 1; /* Fully visible */
+        visibility: visible; /* Make it interactable */
+    }
+
+    /* Left Pane */
+    .main-content {
+        display: flex;
+        flex-grow: 1;
+    }
+    .left-pane {
+        padding: 20px;
+        width: 180px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background-color: #f1faee; /* Pastel green */
+        height: 100vh;
+        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+        gap:8px;
+    }
+
+    /* Board Section */
+    .board {
+        display: flex;
+        flex-grow: 1;
+        padding-top:20px;
+        background-color: #f9f9f9;
+        overflow-y: auto;
+        gap: 10px;
+        flex-direction: column;
+    }
+
+    /* New CSS for Issue Tracker */
+    /* Styling for the issue tracker inside the board div */
+
+    .issue-tracker {
+    flex-grow: 1; /* Allow it to grow and fill available space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    width: 100%; /* Ensure it takes full width */
+    }
+
+    .issue-tracker h1 {
+        text-align: center;
+    }
+
+    .issue-tracker table {
+        width: 90%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .issue-tracker th, .issue-tracker td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .issue-tracker th {
+        background-color: #f2f2f2;
+    }
+
+    .issue-tracker .empty-message {
+        text-align: center;
+        font-style: italic;
+        color: #999;
+    }
+
+    .issue-tracker button {
+        padding: 8px 12px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+    }
+
+    .issue-tracker #create-issue-btn {
+        margin: 20px auto;
+        display: block;
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    /* Popup Modal */
+    .issue-tracker .popup {
+        display: none;
+        position: fixed;
+        z-index: 10;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .issue-tracker .popup-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 500px;
+        box-sizing: border-box;
+    }
+
+    .issue-tracker .popup-content h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .issue-tracker .form-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .issue-tracker label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .issue-tracker input, .issue-tracker textarea, .issue-tracker select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .issue-tracker .textarea-container {
+        grid-column: span 2;
+    }
+
+    .issue-tracker .button-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .issue-tracker #save-btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .issue-tracker #attach-file-btn {
+        background-color: #f0f8ea;
+        color: #4CAF50;
+    }
+
+    .issue-tracker #save-btn:hover {
+        background-color: #45a049;
+    }
+
+    .issue-tracker #attach-file-btn:hover {
+        background-color: #e0f0df;
+    }
+    .edit-btn {
+    background-color: #4CAF50; /* Green background */
+    color: white;              /* White text */
+    border: none;              /* No border */
+    padding: 10px 20px;        /* Some padding */
+    text-align: center;        /* Center the text */
+    text-decoration: none;     /* Remove underline */
+    display: inline-block;     /* Display inline with other elements */
+    font-size: 14px;           /* Slightly smaller text */
+    cursor: pointer;          /* Pointer cursor on hover */
+    border-radius: 5px;        /* Rounded corners */
+    transition: background-color 0.3s ease; /* Smooth transition on hover */
+    }
+
+    .edit-btn:hover {
+        background-color: #45a049; /* Slightly darker green on hover */
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="navbutton">
+        <button class="dropdown-btn" onclick="">Dashboard</button>
+    </div>
+    <div class="navbutton">
+        <a href="/projects/select"><button class="dropdown-btn">Projects</button></a>
+        <div class="dropdown-content">
+            {% for project in projects %}
+                    <a href="">{{ project.name }}</a>
+                {% empty %}
+                    <p>No projects available</p>
+                {% endfor %}
+        </div>
+    </div>
+    <div class="navbutton navbutton-dropdown">
+        <a href="workspaceselection.html"><button class="dropdown-btn">Workspace</button></a>
+        <div class="dropdown-content">
+            <a href="dashboard.html">Workspace 1</a>
+            <a href="dashboard.html">Workspace 2</a>
+            <a href="dashboard.html">Workspace 3</a>
+        </div>
+    </div>
+    <div class="navbutton">
+        <button class="dropdown-btn">Settings</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Left Pane -->
+    <div class="left-pane">
+        <button onclick="window.location.href=`/projects/${projectId}/board`">Board</button>
+        <button onclick="window.location.href=`/projects/${projectId}/board/task-list`">List</button>
+        <button onclick="window.location.href='calendar.html'">Calendar</button>
+        <button onclick="window.location.href='manageppl.html'">Manage People</button>
+    </div>
+
+    <!-- Board Section (Issue Tracker) -->
+    <div class="board">
+        <div class="issue-tracker">
+            <h1>List</h1>
+
+            <!-- Issue Table -->
+            <table id="issue-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Due Date</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th>Assignee</th>
+                        <th>Report To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if tasks %}
+                        {% for task in tasks %}
+                            <tr id="task-{{ task.id }}" >
+                                <td class="task-name">{{ task.name }}</td>
+                                <td class="task-due-date">{{ task.due_date }}</td>
+                                <td class="task-description">{{ task.description }}</td>
+                                <td class="task-priority">{{ task.priority }}</td>
+                                <td class="task-assignee">{{ task.assignee }}</td>
+                                <td class="task-report-to">{{ task.report_to }}</td>
+                                <td><button class="edit-btn" data-task-id="{{ task.id }}"><i class="fa fa-pencil"></i> Edit</button></td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-message"></td>
+                        </tr>
+                    {% endif %}
+
+                </tbody>
+            </table>
+
+            <!-- Add Task Button -->
+            <button id="create-issue-btn">Add Task</button>
+
+            <!-- Modal Popup -->
+            <div id="create-issue-popup" class="popup">
+                <div class="popup-content">
+                    <h2>Create Task</h2>
+                    <form id="task-form" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div>
+                                <label for="task-name">Name:</label>
+                                <input type="text" id="task-name" name="task_name" placeholder="Enter task name" required>
+                            </div>
+            
+                            <div>
+                                <label for="due-date">Due Date:</label>
+                                <input type="date" id="due-date" name="due_date" required>
+                            </div>
+            
+                            <div class="textarea-container">
+                                <label for="description">Description:</label>
+                                <textarea id="description" name="description" rows="3" placeholder="Enter task description"></textarea>
+                            </div>
+            
+                            <div>
+                                <label for="priority">Priority:</label>
+                                <select id="priority" name="priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+            
+                            <div>
+                                <label for="assignee">Assignee:</label>
+                                <select id="assignee" name="assignee">
+                                    <option value="">Select assignee</option>
+                                    <option value="User 1">User 1</option>
+                                    <option value="User 2">User 2</option>
+                                </select>
+                            </div>
+            
+                            <div>
+                                <label for="report-to">Report To:</label>
+                                <select id="report-to" name="report_to">
+                                    <option value="">Select report to</option>
+                                    <option value="Manager 1">Manager 1</option>
+                                    <option value="Manager 2">Manager 2</option>
+                                </select>
+                            </div>
+                        </div>
+            
+                        <!-- File Input -->
+                        <input type="file" id="file-input" name="file" style="display: none;">
+                        <div class="button-group">
+                            <button type="button" id="attach-file-btn">Attach File</button>
+                            <button type="submit" id="save-btn">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="edit-issue-popup" class="popup" data-task-id="{{ task.id }}">
+                <div class="popup-content">
+                    <h2>Edit Task</h2>
+                    <form id="edit-task-form" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div>
+                                <label for="edit-task-name">Name:</label>
+                                <input type="text" id="edit-task-name" name="task_name" placeholder="Enter task name" required>
+                            </div>
+            
+                            <div>
+                                <label for="edit-due-date">Due Date:</label>
+                                <input type="date" id="edit-due-date" name="due_date" required>
+                            </div>
+            
+                            <div class="textarea-container">
+                                <label for="edit-description">Description:</label>
+                                <textarea id="edit-description" name="description" rows="3" placeholder="Enter task description"></textarea>
+                            </div>
+            
+                            <div>
+                                <label for="edit-priority">Priority:</label>
+                                <select id="edit-priority" name="priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+            
+                            <div>
+                                <label for="edit-assignee">Assignee:</label>
+                                <select id="edit-assignee" name="assignee">
+                                    <option value="">Select assignee</option>
+                                    <option value="User 1">User 1</option>
+                                    <option value="User 2">User 2</option>
+                                </select>
+                            </div>
+            
+                            <div>
+                                <label for="edit-report-to">Report To:</label>
+                                <select id="edit-report-to" name="report_to">
+                                    <option value="">Select report to</option>
+                                    <option value="Manager 1">Manager 1</option>
+                                    <option value="Manager 2">Manager 2</option>
+                                </select>
+                            </div>
+                        </div>
+            
+                        <!-- File Input -->
+                        <input type="file" id="edit-file-input" name="file" style="display: none;">
+                        <div class="button-group">
+                            <button type="button" id="edit-attach-file-btn">Attach File</button>
+                            <button type="submit" id="edit-save-btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            
+
+            <!-- JavaScript -->
+            <script>
+                const table = document.getElementById('issue-table');
+                const createIssueBtn = document.getElementById('create-issue-btn');
+                const createIssuePopup = document.getElementById('create-issue-popup');
+                const taskForm = document.getElementById('task-form');
+                const attachFileBtn = document.getElementById('attach-file-btn');
+                const fileInput = document.getElementById('file-input');
+                const projectId = "{{ project.id }}";
+                // Show Popup
+                createIssueBtn.addEventListener('click', () => {
+                    createIssuePopup.style.display = 'block';
+                });
+
+                // Hide Popup on Outside Click
+                window.addEventListener('click', (e) => {
+                    if (e.target === createIssuePopup) {
+                        createIssuePopup.style.display = 'none';
+                    }
+                });
+
+                // Attach File
+                attachFileBtn.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                // Handle Form Submission
+                document.getElementById('task-form').addEventListener('submit', function (event) {
+                event.preventDefault();  // Prevent form from submitting normally
+
+                var formData = new FormData(this);  // Get form data
+                formData.append('task_name', document.getElementById('task-name').value);
+                formData.append('task_due_date', document.getElementById('due-date').value);
+                formData.append('task_priority', document.getElementById('priority').value);
+                formData.append('task_description', document.getElementById('description').value);
+                formData.append('task_assignee', document.getElementById('assignee').value);
+                formData.append('task_report_to', document.getElementById('report-to').value);
+                formData.append('project_id', projectId);
+                const fileInput = document.getElementById('file-input');
+                if (fileInput.files.length > 0) {
+                formData.append('task_attachment', fileInput.files[0]);
+                }
+                fetch(`/projects/${projectId}/board/add_task_for_list/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.task_id) {
+                        const tableBody = document.querySelector('#issue-table tbody');
+                        const newRow = tableBody.insertRow();
+                        newRow.innerHTML = `
+                            <td>${data.task_name}</td>
+                            <td>${data.task_due_date }</td>
+                            <td>${data.task_description }</td>
+                            <td>${data.task_priority}</td>
+                            <td>${data.task_assignee}</td>
+                            <td>${data.task_report_to}</td>
+                        `;
+
+                        // Clear the form
+                        document.getElementById('task-form').reset();
+
+                        // Hide the popup
+                        document.getElementById('create-issue-popup').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            // Open Edit Task Modal
+            document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const taskId = this.getAttribute('data-task-id');
+                console.log('Task ID:', taskId);  // Ensure task ID is correct
+
+                if (taskId && taskId !== 'null') {
+                    // Proceed with fetching task data
+                    fetch(`/projects/${projectId}/board/get_task_data/${taskId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Populate the form with task data
+                            document.getElementById('edit-task-name').value = data.task_name;
+                            document.getElementById('edit-due-date').value = data.due_date;
+                            document.getElementById('edit-description').value = data.description;
+                            document.getElementById('edit-priority').value = data.priority;
+                            document.getElementById('edit-assignee').value = data.assignee;
+                            document.getElementById('edit-report-to').value = data.report_to;
+                            // Set the task ID in the form
+                            const taskForm = document.getElementById('edit-task-form');
+                            taskForm.setAttribute('data-task-id', taskId);
+                            // Show the Edit Task Popup
+                            document.getElementById('edit-issue-popup').style.display = 'block';
+                        })
+                        .catch(error => console.error('Error fetching task data:', error));
+                } else {
+                    console.error('Invalid or missing task ID.');
+                }
+            });
+        });
+
+        document.getElementById('edit-task-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const taskId = this.getAttribute('data-task-id');  // Ensure task ID is here as well
+            console.log('Submitting Task ID:', taskId);
+
+            if (taskId) {
+                const formData = new FormData(this);
+                
+                fetch(`/projects/${projectId}/board/update_task/${taskId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update task in the list after successful update
+                        const taskRow = document.querySelector(`#task-${taskId}`);
+                        taskRow.querySelector('.task-name').textContent = data.task_name;
+                        taskRow.querySelector('.task-due-date').textContent = data.due_date;
+                        taskRow.querySelector('.task-description').textContent = data.description;
+                        taskRow.querySelector('.task-priority').textContent = data.priority;
+                        taskRow.querySelector('.task-assignee').textContent = data.assignee;
+                        taskRow.querySelector('.task-report-to').textContent = data.report_to;
+
+                        // Hide the Edit Task Popup
+                        document.getElementById('edit-issue-popup').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error updating task:', error));
+            } else {
+                console.error('Missing task ID in form submission');
+            }
+        });
+
+            </script>
+        </div>
+    </div>
+  </div>
+
+</body>
+</html>
