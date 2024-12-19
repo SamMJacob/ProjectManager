@@ -1,11 +1,46 @@
 # projects/views.py
 from django.shortcuts import render, redirect
-from .models import Project, ProjectMembership
+from board.models import Task;
+from .models import Project, ProjectMembership,Invitation
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.utils import timezone
+import datetime
 
+def dashboard(request):
+    user = request.user
+
+    # Fetch the user's projects
+    user_projects = Project.objects.filter(projectmembership__user=request.user)
+
+    # Fetch tasks assigned to the user
+    user_tasks = Task.objects.filter(assignee=user)
+    
+
+    # Categorize tasks
+    today = timezone.now().date() 
+    overdue_tasks = user_tasks.filter(due_date__lt=today, status__in=['To Do', 'In Progress'])
+    due_today_tasks = user_tasks.filter(due_date=today, status__in=['To Do', 'In Progress'])
+    upcoming_tasks = user_tasks.filter(due_date__gt=today, status__in=['To Do', 'In Progress']) 
+
+    # Recent notifications (if implemented)
+    #notifications = Notification.objects.filter(user=user).order_by('-timestamp')[:5]
+    print(today)  # This should print the correct date in the expected format
+    print(user_tasks.values('due_date'))  # This prints the due_date of your tasks for debugging
+
+    context = {
+        'projects': user_projects,
+        'tasks': {
+            'overdue': overdue_tasks,
+            'due_today': due_today_tasks,
+            'upcoming': upcoming_tasks,
+        },
+        #'notifications': notifications,
+    }
+    return render(request, 'projects/dashboard.html', context)
 
 def project_selection(request):
     projects = Project.objects.filter(projectmembership__user=request.user)
@@ -65,35 +100,111 @@ def is_user_in_project(user, project):
     
 def manage_people(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    
-    # Ensure the user is an admin of the project
-    if not ProjectMembership.objects.filter(project=project, user=request.user, is_admin=True).exists():
-        messages.error(request, "You must be an admin to manage project members.")
-        return redirect('project_dashboard', project_id=project_id)
 
+    current_user_membership = ProjectMembership.objects.filter(project=project, user=request.user, is_admin=True).exists()
     members = ProjectMembership.objects.filter(project=project)
     non_members = User.objects.exclude(projectmembership__project=project)
-
-    if request.method == 'POST':
-        # Check if the username is provided to invite or remove a user
-        username = request.POST.get('username')
-        if username:
-            try:
-                user_to_remove = User.objects.get(username=username)
-                membership = ProjectMembership.objects.filter(project=project, user=user_to_remove).first()
-                
-                if membership:
-                    membership.delete()
-                    messages.success(request, f"User {username} removed from the project.")
-                else:
-                    messages.error(request, f"User {username} is not part of the project.")
-            except User.DoesNotExist:
-                messages.error(request, "User not found.")
-        
-        return redirect('manage_people', project_id=project_id)
     
     return render(request, 'projects/manageppl.html', {
         'project': project,
         'members': members,
         'non_members': non_members,
+        'is_admin': current_user_membership, 
+    })
+def remove_user(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    current_user_membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
+
+    if not current_user_membership :
+        # Prevent repeated messages
+        if not messages.get_messages(request):
+            messages.error(request, "You must be an admin to manage project members.")
+        return redirect('projects:manage_people', project_id=project_id)
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        user_to_remove = User.objects.filter(username=username).first()
+
+        if user_to_remove and user_to_remove == request.user:
+            messages.error(request, "You cannot remove yourself from the project.")
+        elif user_to_remove:
+            membership_to_remove = ProjectMembership.objects.filter(project=project, user=user_to_remove).first()
+            if membership_to_remove:
+                membership_to_remove.delete()
+                messages.success(request, f"User {username} removed from the project.")
+        else:
+            messages.error(request, f"User {username} does not exist or is not in the project.")
+
+    return redirect('projects:manage_people', project_id=project_id)
+
+def make_admin(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    
+    current_user_membership = ProjectMembership.objects.filter(project=project, user=request.user, is_admin=True).first()
+    if not current_user_membership:
+        messages.error(request, "You must be an admin to promote members.")
+        return redirect('projects:manage_people', project_id=project_id)
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        try:
+            user = User.objects.get(username=username)
+            membership = ProjectMembership.objects.filter(project=project, user=user).first()
+            if membership:
+                membership.is_admin = True
+                membership.save()
+                messages.success(request, f"{username} has been promoted to Admin.")
+            else:
+                messages.error(request, f"User {username} is not part of the project.")
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+    
+    return redirect('projects:manage_people', project_id=project_id)
+
+def invite_user(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        try:
+            user = User.objects.get(username=username)
+            if ProjectMembership.objects.filter(project=project, user=user).exists():
+                messages.error(request, f"User {username} is already a member.")
+            elif Invitation.objects.filter(project=project, user=user, accepted=False).exists():
+                messages.error(request, f"{username} has already been invited.")
+            else:
+                # Send invite logic here (e.g., email notification)
+                Invitation.objects.create(project=project, user=user, accepted=False, invited_by=request.user)
+                subject = f"Invitation to join project: {project.name}"
+                message = f"Hi {user.username},\n\nYou have been invited to join the project '{project.name}'. Click the link below to accept the invitation:\n\nhttp://yourdomain.com/projects/{project.id}/accept-invitation/\n\nBest regards,\n{request.user.username}"
+                from_email = 'sammanu.cs23@bmsce.ac.in'  # Change to your project's email
+                recipient_list = [user.email]
+                
+                send_mail(subject, message, from_email, recipient_list)
+                messages.success(request, f"User {username} has been invited to the project.")
+        except User.DoesNotExist:
+            messages.error(request, f"User {username} does not exist.")
+
+    return redirect('projects:manage_people', project_id=project_id)
+
+def accept_invitation(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    invitation = Invitation.objects.filter(project=project, user=request.user, accepted=False).first()
+
+    if invitation:
+        # Add the user to the project as a member
+        ProjectMembership.objects.create(project=project, user=request.user, is_admin=False)
+        # Mark the invitation as accepted
+        invitation.accepted = True
+        invitation.save()
+        messages.success(request, "You have successfully joined the project.")
+    else:
+        messages.error(request, "No pending invitation found.")
+
+
+
+    # Pass project and tasks to the template
+    return render(request, 'board/board.html', {
+        'project': project,
     })

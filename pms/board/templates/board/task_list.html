@@ -269,20 +269,13 @@
         <a href="/projects/select"><button class="dropdown-btn">Projects</button></a>
         <div class="dropdown-content">
             {% for project in projects %}
-                    <a href="">{{ project.name }}</a>
+                    <a href="{% url 'projects:board_view' project.id %}">{{ project.name }}</a>
                 {% empty %}
-                    <p>No projects available</p>
+                    <p></p>
                 {% endfor %}
         </div>
     </div>
-    <div class="navbutton navbutton-dropdown">
-        <a href="workspaceselection.html"><button class="dropdown-btn">Workspace</button></a>
-        <div class="dropdown-content">
-            <a href="dashboard.html">Workspace 1</a>
-            <a href="dashboard.html">Workspace 2</a>
-            <a href="dashboard.html">Workspace 3</a>
-        </div>
-    </div>
+    
     <div class="navbutton">
         <button class="dropdown-btn">Settings</button>
     </div>
@@ -294,7 +287,7 @@
     <div class="left-pane">
         <button onclick="window.location.href=`/projects/${projectId}/board`">Board</button>
         <button onclick="window.location.href=`/projects/${projectId}/board/task-list`">List</button>
-        <button onclick="window.location.href='calendar.html'">Calendar</button>
+        <!--<button onclick="window.location.href='calendar.html'">Calendar</button>-->
         <button onclick="window.location.href=`/projects/${projectId}/manage`">Manage People</button>
     </div>
 
@@ -324,8 +317,8 @@
                                 <td class="task-due-date">{{ task.due_date }}</td>
                                 <td class="task-description">{{ task.description }}</td>
                                 <td class="task-priority">{{ task.priority }}</td>
-                                <td class="task-assignee">{{ task.assignee }}</td>
-                                <td class="task-report-to">{{ task.report_to }}</td>
+                                <td class="task-assignee">{{ task.assignee.username }}</td>
+                                <td class="task-report-to">{{ task.report_to.username }}</td>
                                 <td><button class="edit-btn" data-task-id="{{ task.id }}"><i class="fa fa-pencil"></i> Edit</button></td>
                             </tr>
                         {% endfor %}
@@ -375,18 +368,18 @@
                             <div>
                                 <label for="assignee">Assignee:</label>
                                 <select id="assignee" name="assignee">
-                                    <option value="">Select assignee</option>
-                                    <option value="User 1">User 1</option>
-                                    <option value="User 2">User 2</option>
+                                    {% for user in users_in_project %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
             
                             <div>
                                 <label for="report-to">Report To:</label>
                                 <select id="report-to" name="report_to">
-                                    <option value="">Select report to</option>
-                                    <option value="Manager 1">Manager 1</option>
-                                    <option value="Manager 2">Manager 2</option>
+                                    {% for user in users_in_project %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -434,18 +427,18 @@
                             <div>
                                 <label for="edit-assignee">Assignee:</label>
                                 <select id="edit-assignee" name="assignee">
-                                    <option value="">Select assignee</option>
-                                    <option value="User 1">User 1</option>
-                                    <option value="User 2">User 2</option>
+                                    {% for user in users_in_project %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
             
                             <div>
                                 <label for="edit-report-to">Report To:</label>
                                 <select id="edit-report-to" name="report_to">
-                                    <option value="">Select report to</option>
-                                    <option value="Manager 1">Manager 1</option>
-                                    <option value="Manager 2">Manager 2</option>
+                                    {% for user in users_in_project %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>

@@ -3,47 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Manage People</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .admin-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     {% block content %}
     <h2>Manage People - {{ project.name }}</h2>
 
-    <h3>Current Members</h3>
-    <ul>
-      {% for membership in members %}
-        <li>
-          {{ membership.user.username }} (Admin: {% if membership.is_admin %}Yes{% else %}No{% endif %})
-          {% if membership.is_admin %}
-            <!-- Admins can't remove themselves, so check if they're not trying to remove themselves -->
-            {% if membership.user != request.user %}
-              <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="username" value="{{ membership.user.username }}">
-                <button type="submit">Remove</button>
-              </form>
-            {% endif %}
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  
-    <h3>Invite New Users</h3>
-    <form method="POST">
-      {% csrf_token %}
-      <label for="username">Username of the user to invite:</label>
-      <input type="text" name="username" id="username" required>
-      <button type="submit">Send Invite</button>
-    </form>
-  
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+    <h3>Project Members</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                {% if current_user_is_admin %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for membership in members %}
+            <tr>
+                <td>{{ membership.user.username }}</td>
+                <td>
+                    {% if membership.is_admin %}
+                        Admin
+                    {% else %}
+                        Member
+                    {% endif %}
+                </td>
+                <td>
+                  {% if is_admin %}
+                    <form method="POST" action="{% url 'projects:remove_user' project.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="{{ membership.user.username }}">
+                        <button type="submit" class="action-btn remove-btn">Remove</button>
+                    </form>
+                    {% if not membership.is_admin %}
+                    <form method="POST" action="{% url 'projects:make_admin' project.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="{{ membership.user.username }}">
+                        <button type="submit" class="action-btn admin-btn">Make Admin</button>
+                    </form>
+                    {% endif %}
+                  {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-  {% endblock %}
+    <h3>Invite New Users</h3>
+    <form method="POST" action="{% url 'projects:invite_user' project.id %}">
+        {% csrf_token %}
+        <label for="username">Username of the user to invite:</label>
+        <input type="text" name="username" id="username" required>
+        <button type="submit">Send Invite</button>
+    </form>
+
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endblock %}
 </body>
 </html>

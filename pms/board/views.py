@@ -4,13 +4,20 @@ from .models import Task
 from django.http import JsonResponse
 import json
 from django.shortcuts import render, get_object_or_404
-from projects.models import Project
+from projects.models import Project,ProjectMembership
+from django.contrib.auth.models import User
 
 
 def board(request, project_id):
-    projects = Project.objects.all()
-    # Fetch tasks and filter by status
+    projects = Project.objects.filter(projectmembership__user=request.user)
+
     project = get_object_or_404(Project, id=project_id)
+
+    project_memberships = ProjectMembership.objects.filter(project=project)
+    users_in_project = [membership.user for membership in project_memberships]
+
+    # Fetch tasks and filter by status
+    
     todo_tasks = Task.objects.filter(status='TODO', project=project)
     in_progress_tasks = Task.objects.filter(status='IN_PROGRESS', project=project)
     completed_tasks = Task.objects.filter(status='COMPLETED', project=project)
@@ -22,6 +29,7 @@ def board(request, project_id):
         'in_progress_tasks': in_progress_tasks,
         'completed_tasks': completed_tasks,
         'projects':projects,
+        'users_in_project': users_in_project,
     })
 
 def add_task(request,project_id):
@@ -37,6 +45,8 @@ def add_task(request,project_id):
 
         project = get_object_or_404(Project, id=project_id)
 
+        task_assignee = get_object_or_404(User, id=task_assignee_id)
+        task_report_to = get_object_or_404(User, id=task_report_to_id)
         # Create the task instance and save to the database
         task = Task.objects.create(
             name=task_name,
@@ -92,14 +102,17 @@ def update_task_status(request,project_id):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
 def task_list(request,project_id):
-    projects = Project.objects.all()
+    projects = Project.objects.filter(projectmembership__user=request.user)
     project = get_object_or_404(Project, id=project_id)
+    project_memberships = ProjectMembership.objects.filter(project=project)
+    users_in_project = [membership.user for membership in project_memberships]
 
     tasks = Task.objects.filter( project=project)  # Fetch all tasks from the database
     return render(request, 'board/task_list.html', {
         'project': project,
         'tasks': tasks,
         'projects':projects,
+        'users_in_project': users_in_project,
     })
 
 def add_task_for_list(request,project_id):

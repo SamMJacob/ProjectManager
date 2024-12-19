@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace Selection</title>
+    <title>Project Selection</title>
     {% csrf_token %}
     <script>
         const csrftoken = "{{ csrf_token }}";
@@ -226,27 +226,24 @@
 <body>
     <nav class="navbar">
         <div class="navbutton">
-            <a href=""><button class="dropdown-btn">Dashboard</button></a>
+            <a href="{% url 'projects:dashboard' %}"><button class="dropdown-btn">Dashboard</button></a>
         </div>
         <div class="navbutton">
             <button class="dropdown-btn">Projects</button>
             <div class="dropdown-content">
                 {% for project in projects %}
-                    <a href="">{{ project.name }}</a>
+                    <a href="{% url 'projects:board_view' project.id %}">{{ project.name }}</a>
                 {% empty %}
-                    <p>No projects available</p>
+                    <p></p>
                 {% endfor %}
             </div>
-        </div>
-        <div class="navbutton">
-            <a href=""><button class="dropdown-btn">Workspace</button></a>
         </div>
         <div class="navbutton">
             <button class="dropdown-btn">Settings</button>
         </div>
     </nav>
 
-    <h1>Which workspace would you like to start with?</h1>
+    <h1>Which Project would you like to start with?</h1>
     <div id="projects-list" class="grid-container">
         {% for project in projects %}
         <div class="workspace" style="position: relative;">
@@ -260,7 +257,7 @@
             </button>
         </div>
         {% empty %}
-            <p>No workspaces available</p>
+            <p></p>
         {% endfor %}
         <button class="create-workspace" id="createBtn">New Project</button>
     </div>

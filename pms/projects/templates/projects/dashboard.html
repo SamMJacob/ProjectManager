@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #4A90E2; /* Pastel Blue */
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #50C878; /* Pastel Green */
+            margin-bottom: 10px;
+            border-bottom: 2px solid #50C878;
+        }
+
+        h3 {
+            color: #F95A61; /* Pastel Red */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #ffffff;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        li a {
+            color: #4A90E2; /* Pastel Blue */
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tasks-section ul {
+            padding-left: 20px;
+        }
+
+        .tasks-section h3 {
+            margin-top: 10px;
+        }
+
+        .empty-message {
+            font-style: italic;
+            color: #A9A9A9;
+        }
+
+        /* Projects Section Grid Layout */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .project-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .project-card:hover {
+            transform: scale(1.05);
+        }
+
+        .project-title {
+            font-size: 1.2em;
+            color: #4A90E2; /* Pastel Blue */
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .project-due-date {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .project-card a {
+            color: #50C878; /* Pastel Green */
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .project-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to Your Dashboard, {{ user.first_name }}</h1>
+
+    <div class="section">
+        <!-- Projects Section -->
+        <h2>Your Projects</h2>
+        <div class="projects-grid">
+            {% for project in projects %}
+                <div class="project-card">
+                    <div class="project-title">{{ project.name }}</div>
+                    <div class="project-due-date">Due: {{ project.due_date|date:"F j, Y" }}</div>
+                    <a href="{% url 'projects:board_view' project.id %}">View Project</a>
+                </div>
+            {% empty %}
+                <p class="empty-message">No projects found. </p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section tasks-section">
+        <!-- Tasks Section -->
+        <h2>Your Tasks</h2>
+        <h3>Overdue Tasks</h3>
+        <ul>
+            {% for task in tasks.overdue %}
+                <li style="background-color: #FFD1D1;"> <!-- Pastel Red Background -->
+                    {{ task.name }} (Due: {{ task.due_date|date:"F j, Y" }})
+                </li>
+            {% empty %}
+                <p class="empty-message">No overdue tasks!</p>
+            {% endfor %}
+        </ul>
+
+        <h3>Due Today</h3>
+        <ul>
+            {% for task in tasks.due_today %}
+                <li style="background-color: #D1F5FF;"> <!-- Pastel Blue Background -->
+                    {{ task.name }} (Priority: {{ task.priority }})
+                </li>
+            {% empty %}
+                <p class="empty-message">No tasks due today!</p>
+            {% endfor %}
+        </ul>
+
+        <h3>Upcoming Tasks</h3>
+        <ul>
+            {% for task in tasks.upcoming %}
+                <li style="background-color: #D4FDD4;"> <!-- Pastel Green Background -->
+                    {{ task.name }} (Due: {{ task.due_date|date:"F j, Y" }})
+                </li>
+            {% empty %}
+                <p class="empty-message">No upcoming tasks!</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <!-- Notifications Section -->
+        <h2>Notifications</h2>
+        <ul>
+            {% for notification in notifications %}
+                <li></li>
+            {% empty %}
+                <p class="empty-message">No new notifications.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>
