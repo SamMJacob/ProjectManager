@@ -45,8 +45,8 @@ def add_task(request,project_id):
 
         project = get_object_or_404(Project, id=project_id)
 
-        task_assignee = get_object_or_404(User, id=task_assignee_id)
-        task_report_to = get_object_or_404(User, id=task_report_to_id)
+        task_assignee = get_object_or_404(User, id=task_assignee)
+        task_report_to = get_object_or_404(User, id=task_report_to)
         # Create the task instance and save to the database
         task = Task.objects.create(
             name=task_name,

@@ -1,5 +1,6 @@
 from django.db import models
 from projects.models import Project
+from django.contrib.auth.models import User
 
 class Task(models.Model):
     STATUS_CHOICES = [
@@ -20,8 +21,8 @@ class Task(models.Model):
     due_date = models.DateField()  # Use DateField if only the date is needed
     description = models.TextField()
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='LOW')
-    assignee = models.CharField(max_length=255,null=True)
-    report_to = models.CharField(max_length=200,null=True)  # ForeignKey to User model
+    assignee = models.ForeignKey(User, related_name='assigned_tasks', on_delete=models.SET_NULL, null=True, blank=True)
+    report_to = models.ForeignKey(User, related_name='reporting_tasks', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='TODO')
     attachment = models.FileField(upload_to='tasks/', null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')

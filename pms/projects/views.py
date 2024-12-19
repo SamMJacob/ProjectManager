@@ -18,18 +18,17 @@ def dashboard(request):
 
     # Fetch tasks assigned to the user
     user_tasks = Task.objects.filter(assignee=user)
-    
 
     # Categorize tasks
     today = timezone.now().date() 
-    overdue_tasks = user_tasks.filter(due_date__lt=today, status__in=['To Do', 'In Progress'])
-    due_today_tasks = user_tasks.filter(due_date=today, status__in=['To Do', 'In Progress'])
-    upcoming_tasks = user_tasks.filter(due_date__gt=today, status__in=['To Do', 'In Progress']) 
+    overdue_tasks = user_tasks.filter(due_date__lt=today)
+    due_today_tasks = user_tasks.filter(due_date=today)
+    upcoming_tasks = user_tasks.filter(due_date__gt=today) 
+    print(upcoming_tasks.values('due_date'))
 
     # Recent notifications (if implemented)
     #notifications = Notification.objects.filter(user=user).order_by('-timestamp')[:5]
-    print(today)  # This should print the correct date in the expected format
-    print(user_tasks.values('due_date'))  # This prints the due_date of your tasks for debugging
+    
 
     context = {
         'projects': user_projects,
