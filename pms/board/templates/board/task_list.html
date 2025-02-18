@@ -277,7 +277,7 @@
     </div>
     
     <div class="navbutton">
-        <button class="dropdown-btn">Settings</button>
+        <button class="dropdown-btn" onclick="logout()">Logout</button>
     </div>
   </nav>
 
@@ -514,8 +514,8 @@
                             <td>${data.task_due_date }</td>
                             <td>${data.task_description }</td>
                             <td>${data.task_priority}</td>
-                            <td>${data.task_assignee}</td>
-                            <td>${data.task_report_to}</td>
+                            <td>${data.assignee ? data.assignee.username : 'Unassigned'}</td>
+                            <td>${data.report_to ? data.report_to.username : 'No one'}</td>
                         `;
 
                         // Clear the form
@@ -594,7 +594,21 @@
                 console.error('Missing task ID in form submission');
             }
         });
+                function logout() {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/acc/logout/';
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+                }
             </script>
         </div>
     </div>

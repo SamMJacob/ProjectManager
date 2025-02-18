@@ -7,25 +7,25 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #F1F8FF; /* Pastel Light Blue */
             margin: 0;
             padding: 0;
         }
 
         h1 {
-            color: #4A90E2; /* Pastel Blue */
+            color: #000000; /* Black */
             text-align: center;
             margin-top: 20px;
         }
 
         h2 {
-            color: #50C878; /* Pastel Green */
+            color: #000000; /* Black */
             margin-bottom: 10px;
-            border-bottom: 2px solid #50C878;
+            border-bottom: 2px solid #4A90E2; /* Pastel Blue */
         }
 
         h3 {
-            color: #F95A61; /* Pastel Red */
+            color: #000000; /* Black */
         }
 
         ul {
@@ -54,9 +54,11 @@
         .section {
             margin: 20px auto;
             padding: 20px;
-            background-color: #ffffff;
+            background-color: #E8F4F8; /* Pastel Light Blue */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 90%;
         }
 
         .tasks-section ul {
@@ -81,7 +83,7 @@
         }
 
         .project-card {
-            background-color: #ffffff;
+            background-color: #D1F5FF; /* Pastel Blue */
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -90,11 +92,12 @@
 
         .project-card:hover {
             transform: scale(1.05);
+            background-color: #B8E1FF; /* Slightly Darker Pastel Blue */
         }
 
         .project-title {
             font-size: 1.2em;
-            color: #4A90E2; /* Pastel Blue */
+            color: #000000; /* Black */
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -116,6 +119,26 @@
         .project-card a:hover {
             text-decoration: underline;
         }
+
+        /* Task list item styling */
+        .task-item {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .overdue-task {
+            background-color: #FFD1D1; /* Pastel Red */
+        }
+
+        .due-today-task {
+            background-color: #D1F5FF; /* Pastel Blue */
+        }
+
+        .upcoming-task {
+            background-color: #D4FDD4; /* Pastel Green */
+        }
     </style>
 </head>
 <body>
@@ -129,7 +152,6 @@
             {% for project in projects %}
                 <div class="project-card">
                     <div class="project-title">{{ project.name }}</div>
-                    <div class="project-due-date">Due: {{ project.due_date|date:"F j, Y" }}</div>
                     <a href="{% url 'projects:board_view' project.id %}">View Project</a>
                 </div>
             {% empty %}
@@ -144,7 +166,7 @@
         <h3>Overdue Tasks</h3>
         <ul>
             {% for task in tasks.overdue %}
-                <li style="background-color: #FFD1D1;"> <!-- Pastel Red Background -->
+                <li class="task-item overdue-task">
                     {{ task.name }} (Due: {{ task.due_date|date:"F j, Y" }})
                 </li>
             {% empty %}
@@ -155,7 +177,7 @@
         <h3>Due Today</h3>
         <ul>
             {% for task in tasks.due_today %}
-                <li style="background-color: #D1F5FF;"> <!-- Pastel Blue Background -->
+                <li class="task-item due-today-task">
                     {{ task.name }} (Priority: {{ task.priority }})
                 </li>
             {% empty %}
@@ -166,23 +188,11 @@
         <h3>Upcoming Tasks</h3>
         <ul>
             {% for task in tasks.upcoming %}
-                <li style="background-color: #D4FDD4;"> <!-- Pastel Green Background -->
+                <li class="task-item upcoming-task">
                     {{ task.name }} (Due: {{ task.due_date|date:"F j, Y" }})
                 </li>
             {% empty %}
                 <p class="empty-message">No upcoming tasks!</p>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="section">
-        <!-- Notifications Section -->
-        <h2>Notifications</h2>
-        <ul>
-            {% for notification in notifications %}
-                <li></li>
-            {% empty %}
-                <p class="empty-message">No new notifications.</p>
             {% endfor %}
         </ul>
     </div>

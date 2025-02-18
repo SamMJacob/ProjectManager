@@ -239,7 +239,7 @@
             </div>
         </div>
         <div class="navbutton">
-            <button class="dropdown-btn">Settings</button>
+            <button class="dropdown-btn" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -250,10 +250,8 @@
             <a href="{% url 'projects:board_view' project.id %}" style="text-decoration: none; color: inherit;">
                 <span>{{ project.name }}</span>
             </a>
-            <button class="delete-btn" 
-                    onclick="confirmDelete('{{ project.id }}', '{{ project.name }}')" 
-                    style="position: absolute; top: 5px; right: 5px; background-color:#5cc0ef; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                &#10005; <!-- Close icon -->
+            <button class="delete-btn" onclick="confirmDelete({{ project.id }}, '{{ project.name|escapejs }}')" style="position: absolute; top: 5px; right: 5px; background-color:#5cc0ef; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                &#10005;
             </button>
         </div>
         {% empty %}
@@ -267,7 +265,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <button class="option" onclick="createYourOwn()">Create Your Own</button>
-            <button class="option" onclick="askToBeInvited()">Ask to be Invited</button>
+            <!--<button class="option" onclick="askToBeInvited()">Ask to be Invited</button>-->
             <div class="invite-form" id="createForm">
                     <form id="project-form" method="POST" >
                         {% csrf_token %}
@@ -349,13 +347,14 @@
                     // Append the new project to the list
                     const newProject = document.createElement('div');
                     newProject.textContent = data.project_name;
-                    newProject.href = "#";
+                    newProject.href = `/${data.projectId}/board/`;
                     newProject.classList.add('workspace'); 
                     const createButton = document.getElementById('createBtn');
                     projectsList.insertBefore(newProject,createButton);
-
                     // Clear the input field
                     projectNameInput.value = '';
+                    document.getElementById('myModal').style.display = 'none';
+                    location.reload();//temp fix
                 } else {
                     alert(data.message);  // Show an error message
                 }
@@ -403,6 +402,21 @@
             });
         }
     };
+    function logout() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/acc/logout/';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
     </script>
 </body>
 </html>

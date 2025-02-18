@@ -9,7 +9,9 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.utils import timezone
 import datetime
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def dashboard(request):
     user = request.user
 
@@ -41,10 +43,11 @@ def dashboard(request):
     }
     return render(request, 'projects/dashboard.html', context)
 
+@login_required
 def project_selection(request):
     projects = Project.objects.filter(projectmembership__user=request.user)
     return render(request, 'projects/project_selection.html', {'projects': projects})
-
+@login_required
 def create_project(request):
     """Handles project creation with AJAX."""
     if request.method == 'POST':
@@ -52,16 +55,30 @@ def create_project(request):
         if project_name:
             project = Project.objects.create(name=project_name)
             ProjectMembership.objects.create(user=request.user, project=project, is_admin=True)
-            return JsonResponse({'status': 'success', 'project_name': project.name})
+            return JsonResponse({'status': 'success', 'project_name': project.name,"projectId": project.id})
         return JsonResponse({'status': 'error', 'message': 'Project name is required.'})
-
+@login_required
 def delete_project(request, project_id):
     if request.method == 'POST':
         project = get_object_or_404(Project, id=project_id)
-        project.delete()
-        return JsonResponse({'status': 'success'})
+        current_user_membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
+        if current_user_membership.is_admin:
+        # Admins can delete the project
+            if request.method == 'POST':
+                project.delete()
+                return JsonResponse({'status': 'success'})
+            else:
+                # Regular users can only be removed from the project, not delete it
+                if request.method == 'POST':
+                    # Remove the user from the project
+                    membership_to_remove = ProjectMembership.objects.filter(project=project, user=request.user).first()
+                    if membership_to_remove:
+                        membership_to_remove.delete()
+                        messages.success(request, f"You have been removed from the project '{project.name}'.")
+                    return JsonResponse({'status': 'success'})
+        
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
-
+@login_required
 def board_view(request, project_id):
     # Fetch the project based on the provided project_id
     project = get_object_or_404(Project, id=project_id)
@@ -71,7 +88,7 @@ def board_view(request, project_id):
     return render(request, 'board/board.html', {
         'project': project,
     })
-
+@login_required
 def add_user_to_project(request, project_id):
     project = Project.objects.get(id=project_id)
     if request.method == 'POST':
@@ -89,14 +106,14 @@ def add_user_to_project(request, project_id):
     available_users = User.objects.exclude(id__in=existing_users)
     
     return render(request, 'add_user_to_project.html', {'project': project, 'available_users': available_users})
-
+@login_required
 def is_user_in_project(user, project):
     try:
         membership = ProjectMembership.objects.get(user=user, project=project)
         return membership.is_admin
     except ProjectMembership.DoesNotExist:
         return False
-    
+@login_required  
 def manage_people(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
@@ -110,6 +127,7 @@ def manage_people(request, project_id):
         'non_members': non_members,
         'is_admin': current_user_membership, 
     })
+@login_required
 def remove_user(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     current_user_membership = ProjectMembership.objects.filter(project=project, user=request.user).first()
@@ -136,6 +154,7 @@ def remove_user(request, project_id):
 
     return redirect('projects:manage_people', project_id=project_id)
 
+@login_required
 def make_admin(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     
@@ -160,6 +179,7 @@ def make_admin(request, project_id):
     
     return redirect('projects:manage_people', project_id=project_id)
 
+@login_required
 def invite_user(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
@@ -176,8 +196,8 @@ def invite_user(request, project_id):
                 # Send invite logic here (e.g., email notification)
                 Invitation.objects.create(project=project, user=user, accepted=False, invited_by=request.user)
                 subject = f"Invitation to join project: {project.name}"
-                message = f"Hi {user.username},\n\nYou have been invited to join the project '{project.name}'. Click the link below to accept the invitation:\n\nhttp://yourdomain.com/projects/{project.id}/accept-invitation/\n\nBest regards,\n{request.user.username}"
-                from_email = 'sammanu.cs23@bmsce.ac.in'  # Change to your project's email
+                message = f"Hi {user.username},\n\nYou have been invited to join the project '{project.name}'. Click the link below to accept the invitation:\n\nhttp://127.0.0.1:8000/projects/{project.id}/accept-invitation/\nNote:You must be logged into your account in the current browser session for this to work.\nBest regards,\n{request.user.username}"
+                from_email = 'sammanu.cs23@bmsce.ac.in'  
                 recipient_list = [user.email]
                 
                 send_mail(subject, message, from_email, recipient_list)
@@ -187,6 +207,7 @@ def invite_user(request, project_id):
 
     return redirect('projects:manage_people', project_id=project_id)
 
+@login_required
 def accept_invitation(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     invitation = Invitation.objects.filter(project=project, user=request.user, accepted=False).first()
@@ -204,6 +225,4 @@ def accept_invitation(request, project_id):
 
 
     # Pass project and tasks to the template
-    return render(request, 'board/board.html', {
-        'project': project,
-    })
+    return redirect('projects:board_view', project_id=project_id)

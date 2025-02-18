@@ -4,15 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9; /* Pastel green background */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4caf50; /* Pastel green heading */
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: #ffffff; /* White background for form */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        form p {
+            margin-bottom: 15px;
+        }
+
+        form label {
+            font-size: 14px;
+            color: #000000; /* Black labels */
+        }
+
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #cfd8dc; /* Light pastel blue border */
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        form input:focus {
+            outline: none;
+            border-color: #90caf9; /* Pastel blue focus color */
+        }
+
+        form small {
+            font-size: 12px; /* Smaller font size */
+            color: #9e9e9e; /* Light grey for username conditions */
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #ffab91; /* Pastel red button */
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #ff8a65; /* Darker pastel red on hover */
+        }
+
+        button[type="submit"]:active {
+            background-color: #ff7043; /* Even darker pastel red on click */
+        }
+    </style>
 </head>
 <body>
-    <h2>Register</h2>
-    
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}  <!-- Renders the form fields as <p> elements -->
-        <button type="submit">Register</button>
-    </form>
-
+    <div>
+        <h2>Register</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Register</button>
+        </form>
+    </div>
 </body>
 </html>

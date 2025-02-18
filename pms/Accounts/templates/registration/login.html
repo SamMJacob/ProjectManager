@@ -4,14 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e7f5f2; /* Pastel green background */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        h2 {
+            text-align: center;
+            color: #66a6a1; /* Muted teal color for headings */
+            margin-bottom: 20px; /* Adds spacing between the heading and form */
+        }
+        form {
+            background-color: #f4fbfa; /* Light pastel blue */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center; /* Ensures form contents are centered */
+        }
+        form input, form select, form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #c3e0dd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        form button {
+            background-color: #ff7f7f; /* Pastel red */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px; /* Rounded button */
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        form button:hover {
+            background-color: #ff5e5e; /* Slightly darker red */
+        }
+        form button:active {
+            background-color: #ff3d3d; /* Even darker red */
+        }
+    </style>
 </head>
 <body>
-    <h2>Login</h2>
+    <div>
+        <h2>Login</h2>
         <form method="POST">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit">Login</button>
-        </form> 
-
+        </form>
+    </div>
 </body>
 </html>

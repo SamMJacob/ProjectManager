@@ -6,8 +6,9 @@ import json
 from django.shortcuts import render, get_object_or_404
 from projects.models import Project,ProjectMembership
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def board(request, project_id):
     projects = Project.objects.filter(projectmembership__user=request.user)
 
@@ -32,6 +33,7 @@ def board(request, project_id):
         'users_in_project': users_in_project,
     })
 
+@login_required
 def add_task(request,project_id):
     if request.method == 'POST':
         # Get the task details from the POST request
@@ -67,6 +69,7 @@ def add_task(request,project_id):
 
     return render(request, 'board/board.html')
 
+@login_required
 def delete_task(request,project_id, task_id):
     if request.method == 'DELETE':
         try:
@@ -78,7 +81,8 @@ def delete_task(request,project_id, task_id):
             return JsonResponse({'error': 'Task not found'}, status=404)
     else:
         return HttpResponseNotAllowed(['DELETE'])
-    
+
+@login_required  
 def update_task_status(request,project_id):
     if request.method == 'POST':
         try:
@@ -101,6 +105,7 @@ def update_task_status(request,project_id):
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
+@login_required
 def task_list(request,project_id):
     projects = Project.objects.filter(projectmembership__user=request.user)
     project = get_object_or_404(Project, id=project_id)
@@ -115,6 +120,7 @@ def task_list(request,project_id):
         'users_in_project': users_in_project,
     })
 
+@login_required
 def add_task_for_list(request,project_id):
     if request.method == 'POST':
         # Get the task details from the POST request
@@ -126,7 +132,12 @@ def add_task_for_list(request,project_id):
         task_report_to = request.POST.get('task_report_to')
         task_attachment = request.FILES.get('task_attachment')  # For file upload
 
+
+
         project = get_object_or_404(Project, id=project_id)
+
+        task_assignee = get_object_or_404(User, id=task_assignee)
+        task_report_to = get_object_or_404(User, id=task_report_to)
         # Create the task instance and save to the database
         task = Task.objects.create(
             name=task_name,
@@ -146,13 +157,20 @@ def add_task_for_list(request,project_id):
             'task_due_date': task.due_date,
             'task_priority': task.priority,
             'task_description': task.description,
-            'task_assignee': task.assignee,
-            'task_report_to': task.report_to,
+            'assignee': {
+                    'id': task.assignee.id,
+                    'username': task.assignee.username,
+                } if task.assignee else None,
+                'report_to': {
+                    'id': task.report_to.id,
+                    'username': task.report_to.username,
+                } if task.report_to else None,
             'task_attachment_url': task.attachment.url if task.attachment else None,
         })
     
     return render(request, 'board/task_list.html')
 
+@login_required
 def get_task_data(request, project_id, task_id):
     task = Task.objects.get(id=task_id)
     return JsonResponse({
@@ -160,10 +178,11 @@ def get_task_data(request, project_id, task_id):
         'due_date': task.due_date,
         'description': task.description,
         'priority': task.priority,
-        'assignee': task.assignee,
-        'report_to': task.report_to,
+        'assignee': task.assignee.username if task.assignee else None,
+        'report_to': task.report_to.username if task.report_to else None,
     })
 
+@login_required
 def update_task(request,project_id,task_id):
     if request.method == 'POST':
         task = Task.objects.get(id=task_id)
@@ -171,8 +190,16 @@ def update_task(request,project_id,task_id):
         task.due_date = request.POST.get('due_date')
         task.description = request.POST.get('description')
         task.priority = request.POST.get('priority')
-        task.assignee = request.POST.get('assignee')
-        task.report_to = request.POST.get('report_to')
+        assignee_id = request.POST.get('assignee')
+
+        if assignee_id:
+            task.assignee = User.objects.get(id=int(assignee_id))
+        
+        # Update report_to if provided
+        report_to_id = request.POST.get('report_to')
+
+        if report_to_id:
+            task.report_to = User.objects.get(id=int(report_to_id))
         task.save()
 
         return JsonResponse({
@@ -181,13 +208,13 @@ def update_task(request,project_id,task_id):
             'due_date': task.due_date,
             'description': task.description,
             'priority': task.priority,
-            'assignee': task.assignee,
-            'report_to': task.report_to,
+            'assignee': task.assignee.username if task.assignee else None,
+            'report_to': task.report_to.username if task.report_to else None,
         })
     
     # board/views.py
 
-
+@login_required
 def project_board(request, project_id):
     # Fetch the specific project
     project = get_object_or_404(Project, id=project_id)

@@ -107,16 +107,18 @@
             gap: 10px;
         }
         .column {
-            background-color: #fae1dd; /* Pastel pink */
+            background-color: #e2cefb; /* Pastel pink */
             border: 1px solid #ddd;
             padding: 10px;
             flex-grow: 1;
-            flex-basis: 33%;
+            flex-basis: 25%;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             max-height: calc(100vh - 200px); /* Adjusted height */
+            max-width: 25%;
+            
         }
         .column h3 {
             text-align: center;
@@ -290,21 +292,25 @@
         </div>
         
         <div class="navbutton">
-            <button class="dropdown-btn">Settings</button>
+            <button class="dropdown-btn" onclick="logout()">Logout</button>
         </div>
+        
     </nav>
-
+    
     <!-- Main Content -->
     <div class="main-content">
+        
         <!-- Left Pane -->
         <div class="left-pane">
+            <h2>{{ project.name }}</h2>
             <button onclick="window.location.href=`/projects/${projectId}/board`">Board</button>
             <button onclick="window.location.href=`/projects/${projectId}/board/task-list`">List</button>
             <!--<button onclick="window.location.href='calendar.html'">Calendar</button>-->
             <button onclick="window.location.href=`/projects/${projectId}/manage`">Manage People</button>
         </div>
-
+        
         <!-- Board Section -->
+        
         <div class="board">
             <div class="column" id="todo-column" ondrop="drop(event)" ondragover="allowDrop(event)">
                 <h2>To Do</h2>
@@ -351,7 +357,6 @@
 
             <!-- Add Task Button -->
             <button class="add-task-btn" onclick="openPopup()">Add Task</button>
-            <div class="column" id="deletespace" ondragover="allowDrop(event); highlightDeleteSpace(event);" ondragleave="resetDeleteSpace();" ondrop="drop(event)">delete</div>
         </div>
     </div>
 
@@ -407,7 +412,7 @@
             <!-- File Input -->
             <input type="file" id="file-input" style="display: none;">
             <div class="button-group">
-              <button type="button" id="attach-file-btn">Attach File</button>
+             <!--  <button type="button" id="attach-file-btn">Attach File</button> -->
               <button type="submit" id="save-btn">Save</button>
             </div>
           </form>
@@ -449,8 +454,10 @@
                     <span>${data.task_name}</span>
                     <button onclick="deleteTask(${data.task_id})">Delete</button>
                 `;
+                
                 document.getElementById('todo-tasks').appendChild(taskDiv);
                 closePopup();
+                location.reload(); //-- temporary fix
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -577,6 +584,21 @@
             });
         } 
 
+        function logout() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/acc/logout/';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+  }
     </script>
 </body>
 </html>
