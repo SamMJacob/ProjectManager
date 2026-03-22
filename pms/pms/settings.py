@@ -26,6 +26,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-f05xo&i7x+^bl_!@3kz+9t4uoj
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Railway automatically sets RAILWAY_PUBLIC_DOMAIN — include it so Django accepts requests
+_railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+if _railway_domain:
+    ALLOWED_HOSTS.append(_railway_domain)
 
 LOGIN_REDIRECT_URL = '/projects/select'
 
