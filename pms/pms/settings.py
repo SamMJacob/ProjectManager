@@ -30,6 +30,8 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 _railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 if _railway_domain:
     ALLOWED_HOSTS.append(_railway_domain)
+# Railway healthcheck comes from this host
+ALLOWED_HOSTS.append('healthcheck.railway.app')
 
 LOGIN_REDIRECT_URL = '/projects/select'
 

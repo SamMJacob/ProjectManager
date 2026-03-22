@@ -3,5 +3,4 @@ buildCommand = "pip install -r requirements.txt && python manage.py collectstati
 
 [deploy]
 startCommand = "daphne -b 0.0.0.0 -p $PORT pms.asgi:application"
-healthcheckPath = "/api/auth/me/"
 restartPolicyType = "ON_FAILURE"
