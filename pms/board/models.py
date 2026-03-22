@@ -26,6 +26,7 @@ class Task(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='TODO')
     attachment = models.FileField(upload_to='tasks/', null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    sprint = models.ForeignKey('projects.Sprint', on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
 
     class Meta:
         ordering = ['due_date']  # This goes inside the Task class

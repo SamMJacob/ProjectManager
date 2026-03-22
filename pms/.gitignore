@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.sqlite3
+media/
+staticfiles/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent / planning files
+CLAUDE.md
+SPEC*.md
+TASKS.md
+REVIEW.md
+TEST_RESULTS.md
+login.log
+.playwright-mcp/

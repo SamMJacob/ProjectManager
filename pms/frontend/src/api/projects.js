@@ -1,0 +1,11 @@
+import client from './client'
+export const getProjects    = ()           => client.get('/projects/')
+export const createProject  = (data)       => client.post('/projects/', data)
+export const getProject     = (id)         => client.get(`/projects/${id}/`)
+export const deleteProject  = (id)         => client.delete(`/projects/${id}/`)
+export const getMembers     = (id)         => client.get(`/projects/${id}/members/`)
+export const addMember      = (id, data)   => client.post(`/projects/${id}/members/`, data)
+export const removeMember   = (id, uid)    => client.delete(`/projects/${id}/members/${uid}/`)
+export const updateMember   = (id, uid, d) => client.patch(`/projects/${id}/members/${uid}/`, d)
+export const inviteUser     = (id, data)   => client.post(`/projects/${id}/invite/`, data)
+export const acceptInvitation = (invId)    => client.get(`/invitations/${invId}/accept/`)
