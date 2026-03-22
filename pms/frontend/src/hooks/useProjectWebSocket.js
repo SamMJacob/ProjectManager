@@ -12,7 +12,8 @@ export function useProjectWebSocket(projectId, handlers) {
 
     const connect = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const ws = new WebSocket(`${protocol}//${window.location.host}/ws/board/${projectId}/`)
+      const host = import.meta.env.VITE_BACKEND_HOST || window.location.host
+      const ws = new WebSocket(`${protocol}//${host}/ws/board/${projectId}/`)
       wsRef.current = ws
 
       ws.onopen = () => { retryDelay.current = 1000 }
