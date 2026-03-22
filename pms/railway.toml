@@ -1,6 +1,6 @@
 [build]
-buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "python manage.py migrate && daphne -b 0.0.0.0 -p $PORT pms.asgi:application"
 restartPolicyType = "ON_FAILURE"
