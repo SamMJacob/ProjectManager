@@ -11,17 +11,21 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers.auth import RegisterSerializer, UserSerializer
 
 _SECURE_COOKIE = not settings.DEBUG
+# Use SameSite=None in production (HTTPS) so cookies are sent on all requests
+# regardless of how the frontend/backend are deployed. Requires Secure=True.
+# In dev (DEBUG=True) fall back to Lax so HTTP localhost still works.
+_SAMESITE = 'None' if _SECURE_COOKIE else 'Lax'
 
 
 def _set_jwt_cookies(response, user):
     refresh = RefreshToken.for_user(user)
     response.set_cookie(
         'access_token', str(refresh.access_token),
-        max_age=900, httponly=True, samesite='Lax', secure=_SECURE_COOKIE,
+        max_age=900, httponly=True, samesite=_SAMESITE, secure=_SECURE_COOKIE,
     )
     response.set_cookie(
         'refresh_token', str(refresh),
-        max_age=604800, httponly=True, samesite='Lax', secure=_SECURE_COOKIE,
+        max_age=604800, httponly=True, samesite=_SAMESITE, secure=_SECURE_COOKIE,
     )
     return response
 
@@ -86,7 +90,7 @@ class TokenRefreshCookieView(APIView):
         response = Response({'message': 'Token refreshed'})
         response.set_cookie(
             'access_token', str(refresh.access_token),
-            max_age=900, httponly=True, samesite='Lax', secure=_SECURE_COOKIE,
+            max_age=900, httponly=True, samesite=_SAMESITE, secure=_SECURE_COOKIE,
         )
         return response
 
